@@ -15,8 +15,9 @@ The Music Box returns from Zeta Players but now this time is more multiplayer fr
 - OGG
 - Anything else BASS audio system supports http://www.un4seen.com/doc/#bass/bass.html
 
-The Music Box's main feature is its Music Visualizer that will follow the music as it plays
+The Music Box's main feature is its Music Visualizer that will follow the music as it plays.
 
+## How to add music
 To add music to the Music Box, simply create folders until you get this file path: `DRIVE:\Program Files (x86)\Steam\steamapps\common\GarrysMod\sourceengine\sound\lambdaplayers\musicbox`
 
 Addons can add music to the music box just by doing the same such as: `ADDONNAME/sound/lambdaplayers/musicbox/( Music files )`
@@ -29,6 +30,13 @@ Place your music files in `musicbox` and you are done! Just note that your music
 
 ![image](https://user-images.githubusercontent.com/109770359/208526499-d03098c4-874b-410f-8c51-75b5b2bce824.png)
 
+## Key Words
+
+This addon adds a new Condition Key word
+
+- |nearmusicbox|  :  Text Lines with this Key Word can only be used if a lambda is near a music box
+
+## Outro
 All settings for the Music Box can be located in the Music Box category under Lambda Players
 
 ![image](https://user-images.githubusercontent.com/109770359/208527931-86802430-9144-48e8-afb6-8c52a38329d7.png)

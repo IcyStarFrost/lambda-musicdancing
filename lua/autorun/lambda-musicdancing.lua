@@ -36,6 +36,11 @@ local function Initialize( self )
         self:SetState( "Idle" )
     end
 
+    function self:DanceNearEnt( ent ) 
+        self.lm_musicorigin = ent
+        self:SetState( "DancingToMusic" )
+        self:CancelMovement()
+    end
 
     -- The hook that powers it all
     self:Hook( "EntityEmitSound", "musiclistening", function( snddata )
@@ -44,9 +49,7 @@ local function Initialize( self )
         local ent = snddata.Entity 
 
         if IsValid( ent ) and string_find( filepath, "music" ) and self:GetRangeSquaredTo( ent ) <= ( 2000 * 2000 ) and random( 1, 3 ) == 1 then -- Music!
-            self.lm_musicorigin = ent
-            self:SetState( "DancingToMusic" )
-            self:CancelMovement()
+            self:DanceNearEnt( ent ) 
         end
     end, true )
 

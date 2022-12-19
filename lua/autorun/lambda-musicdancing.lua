@@ -10,6 +10,7 @@ local function Initialize( self )
 
     -- Dancing state
     function self:DancingToMusic()
+        if !IsValid( self.lm_musicorigin ) then self:SetState( "Idle" ) return end
         local musicorigin = self.lm_musicorigin:GetPos() + Vector( 0, 0, 10 )
 
         -- Get near the origin

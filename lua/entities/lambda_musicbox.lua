@@ -9,6 +9,7 @@ ENT.Spawnable = true
 -- Locals --
 
 local random = math.random
+local rand = math.Rand
 local string_Explode = string.Explode
 local string_StripExtension = string.StripExtension
 local table_Empty = table.Empty
@@ -19,6 +20,7 @@ local IsValid = IsValid
 local Angle = Angle
 local math_Clamp = math.Clamp
 local CurTime = CurTime
+local RandomPairs = RandomPairs
 local string_sub = string.sub
 local table_Add = table.Add
 local table_concat = table.concat
@@ -92,6 +94,7 @@ function ENT:Initialize()
         self.l_musiclist = {} -- The music we are gonna play
         self.l_musicindex = 1 -- The index where we are playing in our list of music
         self.l_firstplayed = true -- If this is the first time we played music
+        self.l_nextdancewave = CurTime() + 5 -- The next we may make a Lambda dance near us
 
         -- Populate the music list
         self:PopulateMusicList()
@@ -209,6 +212,14 @@ function ENT:Think()
         
         self:PlayMusic()
         self.l_firstplayed = false
+    elseif SERVER and self:IsPlaying() and CurTime() > self.l_nextdancewave then
+        for k, v in RandomPairs( GetLambdaPlayers() ) do
+            if LambdaIsValid( v ) and v:GetRangeSquaredTo( self:GetPos() ) <= ( 2000 * 2000 ) then
+                v:DanceNearEnt( self ) 
+                break
+            end
+        end
+        self.l_nextdancewave = CurTime() + rand( 10, 130 )
     end
     
 end

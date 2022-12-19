@@ -54,8 +54,21 @@ local function SetupLimits()
     CreateLambdaEntLimit( "MusicBox", 1, 10 )
 end
 
+local function AddKeywords()
+
+    local function nearmusicbox( self )
+        local nearby = self:FindInSphere( nil, 1000, function( ent )
+            return ent:GetClass() == "lambda_musicbox"
+        end )
+        return #nearby > 0
+    end
+
+    LambdaAddConditionalKeyWord( "|nearmusicbox|", nearmusicbox )
+end
 
 
+
+hook.Add( "LambdaAddKeyWords", "lambdamusicboxKeywords", AddKeywords )
 hook.Add( "LambdaOnEntLimitsCreated", "lambdamusicboxlimits", SetupLimits )
 hook.Add( "LambdaOnToolsLoaded", "lambdamusicboxtool", LoadTools )
 hook.Add( "LambdaOnConvarsCreated", "lambdamusicboxconvars", Convars )

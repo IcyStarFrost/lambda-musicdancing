@@ -7,7 +7,7 @@ A addon for Lambda Players that makes them dance when they hear music. This addo
 
 # Music Box
 
-The Music Box returns from Zeta Players! The Music Box is a entity that is specifically designed to play music in game that Lambdas can dance to. The Music Box can support any of these file types
+The Music Box returns from Zeta Players but now this time is more multiplayer friendly and optimized! The Music Box is a entity that is specifically designed to play music in game that Lambdas can dance to. The Music Box can support any of these file types
 - MP3
 - WAV
 - FLAC
@@ -28,6 +28,11 @@ Place your music files in `musicbox` and you are done! Just note that your music
 > You can create sub folders in `musicbox` to be able to organize your music
 
 ![image](https://user-images.githubusercontent.com/109770359/208526499-d03098c4-874b-410f-8c51-75b5b2bce824.png)
+
+All settings for the Music Box can be located in the Music Box category under Lambda Players
+
+![image](https://user-images.githubusercontent.com/109770359/208527931-86802430-9144-48e8-afb6-8c52a38329d7.png)
+
 
 
 ![ezgif-2-7115de4ab5](https://user-images.githubusercontent.com/109770359/208524536-7cf2bbdc-77da-40a2-aaf3-6e976dabc73a.gif)

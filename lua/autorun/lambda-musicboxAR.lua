@@ -11,6 +11,53 @@ local function Convars()
     CreateLambdaConvar( "lambdaplayers_musicbox_playonce", 0, true, false, false, "If Music Boxes should only play once and remove themselves", 0, 1, { type = "Bool", name = "Play Once", category = "Music Box" } )
 end
 
+local VectorRand = VectorRand
+local table_insert = table.insert
+
+local function LoadTools()
+
+    local function MusicBoxTool( self, ent )
+        if !self:IsUnderLimit( "MusicBox" ) then return end
+
+        
+        local rand = VectorRand( -1000, 1000 )
+        rand.z = -50
+        local tr = self:Trace( self:WorldSpaceCenter() + rand  )
+        local pos = tr.HitPos
+
+    
+        self:LookTo( pos, 2 )
+    
+        coroutine.wait( 1 )
+    
+        self:UseWeapon( pos )
+        local SpawnPos = tr.HitPos + tr.HitNormal * 10
+
+        local musicbox = ents.Create( "lambda_musicbox" )
+        musicbox:SetPos( SpawnPos )
+        musicbox:SetAngles( Angle( 0, self:GetAngles()[ 2 ], 0 ) )
+        musicbox:SetSpawner( self )
+        musicbox.LambdaOwner = self
+        musicbox.IsLambdaSpawned = true
+        musicbox:Spawn()
+
+        self:ContributeEntToLimit( musicbox, "MusicBox" )
+        table_insert( self.l_SpawnedEntities, 1, musicbox )
+
+        return true
+    end
+
+    AddToolFunctionToLambdaTools( "MusicBox", MusicBoxTool )
+end
+
+local function SetupLimits()
+    CreateLambdaEntLimit( "MusicBox", 1, 10 )
+end
+
+
+
+hook.Add( "LambdaOnEntLimitsCreated", "lambdamusicboxlimits", SetupLimits )
+hook.Add( "LambdaOnToolsLoaded", "lambdamusicboxtool", LoadTools )
 hook.Add( "LambdaOnConvarsCreated", "lambdamusicboxconvars", Convars )
 
 

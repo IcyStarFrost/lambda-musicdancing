@@ -172,9 +172,14 @@ function ENT:SetupDataTables()
 
     self:NetworkVar( "String", 0, "MusicName" )
     self:NetworkVar( "String", 1, "TrackName" )
+    self:NetworkVar( "String", 2, "SpawnerName" )
     self:NetworkVar( "Entity", 0, "Spawner" )
     self:NetworkVar( "Float", 0, "MusicDuration")
     self:NetworkVar( "Bool", 0, "Looped" )
+
+    self:NetworkVarNotify( "Spawner", function( lambda, name, old, new )
+        self:SetSpawnerName( new:Nick() )
+    end )
 
 end
 
@@ -324,7 +329,7 @@ end
 if CLIENT then
 
     function ENT:GetOverlayText()
-        local plyname = IsValid( self:GetSpawner() ) and self:GetSpawner():Nick() .. "\n" or ""
+        local plyname = self:GetSpawnerName() .. "\n" or ""
         return plyname .. " ( " .. self:GetMusicName() .. " )"
     end
 
@@ -508,6 +513,38 @@ properties.Add( "Disable Loop", {
         if ( !self:Filter( ent, ply ) ) then return end
 
         ent:SetLooped( false )
+
+    end
+
+})
+
+properties.Add( "Play Next Track", {
+    MenuLabel = "Play Next Track",
+    Order = 497,
+    MenuIcon = "icon16/arrow_rotate_anticlockwise.png",
+
+    Filter = function( self, ent, ply ) 
+        if !IsValid( ent ) then return false end
+        if ent:GetClass() != "lambda_musicbox" then return false end
+        if !gamemode.Call( "CanProperty", ply, "Play Next Track", ent ) then return false end
+
+        return true
+    end,
+
+    Action = function( self, ent ) 
+        self:MsgStart()
+            net.WriteEntity( ent )
+        self:MsgEnd()
+    end,
+
+    Receive = function( self, length, ply )
+
+        local ent = net.ReadEntity()
+
+        if ( !properties.CanBeTargeted( ent, ply ) ) then return end
+        if ( !self:Filter( ent, ply ) ) then return end
+
+        ent:PlayMusic()
 
     end
 

@@ -194,6 +194,7 @@ function ENT:Think()
     BaseClass.Think( self )
     if CLIENT and IsValid( self.l_musicchannel ) then
         self.l_musicchannel:SetPos( self:GetPos() )
+        self.l_musicchannel:Play()
 
         if self.l_no3d then
             local dist = LocalPlayer():GetPos():DistToSqr( self:GetPos() )

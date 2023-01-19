@@ -99,6 +99,7 @@ function ENT:Initialize()
         -- Populate the music list
         self:PopulateMusicList()
 
+        self:SetSpawnerName( self:GetSpawner():Nick() )
 
     elseif CLIENT then
 
@@ -179,10 +180,6 @@ function ENT:SetupDataTables()
     self:NetworkVar( "Entity", 0, "Spawner" )
     self:NetworkVar( "Float", 0, "MusicDuration")
     self:NetworkVar( "Bool", 0, "Looped" )
-
-    self:NetworkVarNotify( "Spawner", function( lambda, name, old, new )
-        self:SetSpawnerName( new:Nick() )
-    end )
 
 end
 

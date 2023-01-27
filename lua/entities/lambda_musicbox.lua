@@ -48,11 +48,11 @@ if SERVER then
     util.AddNetworkString( "lambdaplayers_musicbox_sendmusiclist" )
 
     net.Receive( "lambdaplayers_musicbox_returnduration", function( len, ply )
-        local self = net.ReadEntity()
+        local musicbox = net.ReadEntity()
         local duration = net.ReadFloat()
-        if !IsValid( self ) then return end
+        if !IsValid( musicbox ) then return end
         
-        self:SetMusicDuration( CurTime() + duration )
+        musicbox:SetMusicDuration( CurTime() + duration )
     end )
 end
 
@@ -321,16 +321,20 @@ function ENT:PopulateMusicList()
 
     MergeDirectory( "lambdaplayers/musicbox", self.l_musiclist )
 
+    -- Delay this a bit since the client doesn't know about this entity yet on init
+    LambdaCreateThread( function()
+        coroutine.wait( 0.5 )
+        if !IsValid( self ) then return end
+        local data = DataSplit( TableToJSON( self.l_musiclist ) )
 
-    local data = DataSplit( TableToJSON( self.l_musiclist ) )
-
-    for k, v in ipairs( data ) do
-        net.Start( "lambdaplayers_musicbox_sendmusiclist" )
-        net.WriteEntity( self )
-        net.WriteString( v )
-        net.WriteBool( k == #data )
-        net.Broadcast()
-    end
+        for k, v in ipairs( data ) do
+            net.Start( "lambdaplayers_musicbox_sendmusiclist" )
+            net.WriteEntity( self )
+            net.WriteString( v )
+            net.WriteBool( k == #data )
+            net.Broadcast()
+        end
+    end )
 
 end
 
@@ -379,12 +383,12 @@ if CLIENT then
     end
     
     net.Receive( "lambdaplayers_musicbox_playmusic", function()
-        local self = net.ReadEntity()
+        local musicbox = net.ReadEntity()
         local track = net.ReadString()
 
-        if !IsValid( self ) then return end
+        if !IsValid( musicbox ) then return end
 
-        PlayMusicTrack( self, track, false )
+        PlayMusicTrack( musicbox, track, false )
     end )
 
     local receiving = false
@@ -392,15 +396,14 @@ if CLIENT then
     net.Receive( "lambdaplayers_musicbox_sendmusiclist", function()
         if !receiving then buildstring = "" end
         receiving = true
-        local self = net.ReadEntity()
+        local musicbox = net.ReadEntity()
         local chunk = net.ReadString()
         local isdone = net.ReadBool()
 
         buildstring = buildstring .. chunk
-
         if isdone then
+            musicbox.l_musiclist = util.JSONToTable( buildstring )
             receiving = false
-            self.l_musiclist = JSONToTable( buildstring )
         end
         
     end )
@@ -431,7 +434,7 @@ properties.Add("Music Tracks", {
 
         for i = 1, #copy do
 
-            local option = submenu:AddOption( TrackPrettyprint( copy[ i ] ), function()
+            submenu:AddOption( TrackPrettyprint( copy[ i ] ), function()
             
                 self:MsgStart()
                     net.WriteEntity( ent )

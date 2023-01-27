@@ -402,7 +402,7 @@ if CLIENT then
 
         buildstring = buildstring .. chunk
         if isdone then
-            musicbox.l_musiclist = util.JSONToTable( buildstring )
+            musicbox.l_musiclist = JSONToTable( buildstring )
             receiving = false
         end
         

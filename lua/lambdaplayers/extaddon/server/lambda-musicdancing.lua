@@ -43,16 +43,18 @@ local function Initialize( self )
         self:CancelMovement()
     end
 
-    -- The hook that powers it all
-    self:Hook( "EntityEmitSound", "musiclistening", function( snddata )
-        if self:GetIsDead() then return end
-        local filepath = snddata.SoundName 
-        local ent = snddata.Entity 
+    if SERVER then
+        -- The hook that powers it all
+        self:Hook( "EntityEmitSound", "musiclistening", function( snddata )
+            if self:GetIsDead() then return end
+            local filepath = snddata.SoundName 
+            local ent = snddata.Entity 
 
-        if IsValid( ent ) and string_find( filepath, "music" ) and self:GetRangeSquaredTo( ent ) <= ( 2000 * 2000 ) and random( 1, 3 ) == 1 then -- Music!
-            self:DanceNearEnt( ent ) 
-        end
-    end, true )
+            if IsValid( ent ) and string_find( filepath, "music" ) and self:GetRangeSquaredTo( ent ) <= ( 2000 * 2000 ) and random( 1, 3 ) == 1 then -- Music!
+                self:DanceNearEnt( ent ) 
+            end
+        end, true )
+    end
 
 end
 

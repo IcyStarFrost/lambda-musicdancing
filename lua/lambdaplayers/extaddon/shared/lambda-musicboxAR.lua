@@ -8,6 +8,7 @@ CreateLambdaConvar( "lambdaplayers_musicbox_shufflemusic", 1, true, true, true, 
 CreateLambdaConvar( "lambdaplayers_musicbox_custommusiconly", 0, true, false, false, "If only custom music should be played", 0, 1, { type = "Bool", name = "Custom Only", category = "Music Box" } )
 CreateLambdaConvar( "lambdaplayers_musicbox_musicvolume", 1, true, true, false, "The volume of the music played", 0, 10, { type = "Slider", decimals = 2, name = "Music Volume", category = "Music Box" } )
 CreateLambdaConvar( "lambdaplayers_musicbox_playonce", 0, true, false, false, "If Music Boxes should only play once and remove themselves", 0, 1, { type = "Bool", name = "Play Once", category = "Music Box" } )
+CreateLambdaConvar( "lambdaplayers_musicbox_clientsidemode", 0, true, true, true, "If Musics Boxes should enter Client-Side mode and play music you have instead of the Server's music. Note: This is only useful in Multiplayer and only you can hear your music", 0, 1, { type = "Bool", name = "Client-Side Mode", category = "Music Box" } )
 
 
 local VectorRand = VectorRand

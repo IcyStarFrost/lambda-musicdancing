@@ -94,7 +94,7 @@ function ENT:Initialize()
         self.l_musiclist = {} -- The music we are gonna play
         self.l_musicindex = 1 -- The index where we are playing in our list of music
         self.l_firstplayed = true -- If this is the first time we played music
-        self.l_nextdancewave = CurTime() + 5 -- The next we may make a Lambda dance near us
+        self.l_nextdancewave = CurTime() + 130 -- The next we may make a Lambda dance near us
 
         -- Populate the music list
         self:PopulateMusicList()
@@ -102,6 +102,13 @@ function ENT:Initialize()
         self:SetSpawnerName( self:GetSpawner():Nick() )
 
     elseif CLIENT then
+
+        self.l_musicduration = 0 -- Client side mode music duration
+        self.l_musicindex = 1 -- Client side mode music index
+        self.l_clmusiclist = {} -- Client side mode Music List
+        self.l_islooped = false -- Client side mode looping
+        self.l_trackname = "" -- Client side mode track name
+        self.l_realtrackname = "" -- Client side mode track file path
 
         self.l_musicchannel = nil -- The stream of the currently playing music
         self.l_no3d = false -- If the music shouldn't play in 3d
@@ -183,12 +190,19 @@ function ENT:SetupDataTables()
 
 end
 
+-- If music is currently playing
 function ENT:IsPlaying()
     return CurTime() < self:GetMusicDuration()
 end
 
+
+local clientmodecvar = CLIENT and GetConVar( "lambdaplayers_musicbox_clientsidemode" ) or nil
+
 function ENT:Think()
     BaseClass.Think( self )
+
+    local clientsidemode = CLIENT and self:GetSpawner() == LocalPlayer() and clientmodecvar:GetBool() or false
+
     if CLIENT and IsValid( self.l_musicchannel ) then
         self.l_musicchannel:SetPos( self:GetPos() )
         self.l_musicchannel:Play()
@@ -219,6 +233,20 @@ function ENT:Think()
         end
         self.l_nextdancewave = CurTime() + rand( 10, 130 )
     end
+
+
+    -- CLIENT SIDE MODE --
+    -- Client side mode for music box basically is a mode useful in multiplayer where the music box will only play LocalPlayer's custom music regardless if the server has it or not.
+    -- Only the Localplayer can hear/control their music in this mode
+
+    if CLIENT and clientsidemode and self:BeingLookedAtByLocalPlayer() and LocalPlayer():KeyPressed( IN_USE ) then
+        self:PlayMusicClientSide()
+    end
+
+    if CLIENT and clientsidemode and SysTime() > self.l_musicduration then
+        self:PlayMusicClientSide()
+    end
+    --
     
 end
 
@@ -253,6 +281,7 @@ local function TrackPrettyprint( strin )
     return filename
 end
 
+-- Play some music unless a specified track is played
 function ENT:PlayMusic( specifictrack )
     local track 
 
@@ -284,6 +313,68 @@ function ENT:PlayMusic( specifictrack )
 
 end
 
+if CLIENT then
+
+    function ENT:PlayMusicClientSide()
+        if table.IsEmpty( self.l_clmusiclist ) then 
+            self:PopulateMusicList()
+            self.l_musicduration = SysTime() + 0.5
+            return
+        end
+
+        local track 
+
+        if GetConVar( "lambdaplayers_musicbox_shufflemusic" ):GetBool() or !IsValid( self:GetSpawner() ) or self:GetSpawner().IsLambdaPlayer then
+            track = self.l_clmusiclist[ random( #self.l_clmusiclist ) ]
+        else
+            self.l_musicindex = self.l_musicindex < #self.l_clmusiclist and self.l_musicindex + 1 or 1
+            track = self.l_clmusiclist[ self.l_musicindex ]
+        end
+
+        self.l_musicduration = SysTime() + 2
+    
+        track = specifictrack or self.l_islooped and self.l_realtrackname or track
+
+        self:PlayTrack( track )
+    end
+
+    function ENT:PlayTrack( track, no3d )
+
+        if IsValid( self.l_musicchannel ) then self.l_musicchannel:Stop() end
+
+        self.l_no3d = no3d
+
+        local flags = no3d and "mono" or "3d mono"  
+
+        sound.PlayFile( "sound/" .. track, flags, function( chan, id, name )
+            if id then
+                if id == 2 then
+                    if game.SinglePlayer() then
+                        print( "Lambda Players Music Box Warning: A music file failed to open. File is, " .. "sound/" .. track .. "\nMake sure you are not using non alphabet characters and double spaces in your file names" )
+                    end
+                    self:EmitSound( "buttons/combine_button_locked.wav", 100 )
+                elseif id == 21 then
+                    self:PlayTrack( track, true ) -- Track failed to play in 3d. Play in stereo
+                end
+                
+                return
+            end
+
+
+            self.l_musicduration = SysTime() + chan:GetLength()
+            self.l_musicchannel = chan
+            self.l_trackname = TrackPrettyprint( track )
+            self.l_realtrackname = track
+
+            chan:Play()
+
+            
+        
+        end )
+
+    end
+end
+
 function ENT:OnRemove()
     if CLIENT and IsValid( self.l_musicchannel ) then
         self.l_musicchannel:Stop()
@@ -293,48 +384,65 @@ end
 
 -- Clears the music list and adds music to it
 function ENT:PopulateMusicList()
-    table_Empty( self.l_musiclist )
 
-    local function MergeDirectory( dir, tbl )
-        dir = dir .. "/"
-        local files, dirs = file.Find( "sound/" .. dir .. "*", "GAME", "nameasc" )
-        for k, v in ipairs( files ) do table_insert( tbl, dir .. v ) end
-        for k, v in ipairs( dirs ) do MergeDirectory( dir .. v, tbl ) end
-    end
+    if SERVER then
 
-    if !GetConVar( "lambdaplayers_musicbox_custommusiconly" ):GetBool() then
-        local defaults = {
-            "music/hl2_song0.mp3",
-            "music/hl2_song12_long.mp3",
-            "music/hl2_song14.mp3",
-            "music/hl2_song15.mp3",
-            "music/hl2_song16.mp3",
-            "music/hl2_song20_submix0.mp3",
-            "music/hl2_song20_submix4.mp3",
-            "music/hl2_song29.mp3",
-            "music/hl2_song3.mp3",
-            "music/hl2_song4.mp3",
-            "music/hl2_song6.mp3",
-        }
-        table_Add( self.l_musiclist, defaults )
-    end
+        table_Empty( self.l_musiclist )
 
-    MergeDirectory( "lambdaplayers/musicbox", self.l_musiclist )
-
-    -- Delay this a bit since the client doesn't know about this entity yet on init
-    LambdaCreateThread( function()
-        coroutine.wait( 0.5 )
-        if !IsValid( self ) then return end
-        local data = DataSplit( TableToJSON( self.l_musiclist ) )
-
-        for k, v in ipairs( data ) do
-            net.Start( "lambdaplayers_musicbox_sendmusiclist" )
-            net.WriteEntity( self )
-            net.WriteString( v )
-            net.WriteBool( k == #data )
-            net.Broadcast()
+        local function MergeDirectory( dir, tbl )
+            dir = dir .. "/"
+            local files, dirs = file.Find( "sound/" .. dir .. "*", "GAME", "nameasc" )
+            for k, v in ipairs( files ) do table_insert( tbl, dir .. v ) end
+            for k, v in ipairs( dirs ) do MergeDirectory( dir .. v, tbl ) end
         end
-    end )
+
+        if !GetConVar( "lambdaplayers_musicbox_custommusiconly" ):GetBool() then
+            local defaults = {
+                "music/hl2_song0.mp3",
+                "music/hl2_song12_long.mp3",
+                "music/hl2_song14.mp3",
+                "music/hl2_song15.mp3",
+                "music/hl2_song16.mp3",
+                "music/hl2_song20_submix0.mp3",
+                "music/hl2_song20_submix4.mp3",
+                "music/hl2_song29.mp3",
+                "music/hl2_song3.mp3",
+                "music/hl2_song4.mp3",
+                "music/hl2_song6.mp3",
+            }
+            table_Add( self.l_musiclist, defaults )
+        end
+
+        MergeDirectory( "lambdaplayers/musicbox", self.l_musiclist )
+
+        -- Delay this a bit since the client doesn't know about this entity yet on init
+        LambdaCreateThread( function()
+            coroutine.wait( 0.5 )
+            if !IsValid( self ) then return end
+            local data = DataSplit( TableToJSON( self.l_musiclist ) )
+
+            for k, v in ipairs( data ) do
+                net.Start( "lambdaplayers_musicbox_sendmusiclist" )
+                net.WriteEntity( self )
+                net.WriteString( v )
+                net.WriteBool( k == #data )
+                net.Broadcast()
+            end
+        end )
+
+    elseif CLIENT then
+
+        table_Empty( self.l_clmusiclist )
+
+        local function MergeDirectory( dir, tbl )
+            dir = dir .. "/"
+            local files, dirs = file.Find( "sound/" .. dir .. "*", "GAME", "nameasc" )
+            for k, v in ipairs( files ) do table_insert( tbl, dir .. v ) end
+            for k, v in ipairs( dirs ) do MergeDirectory( dir .. v, tbl ) end
+        end
+
+        MergeDirectory( "lambdaplayers/musicbox", self.l_clmusiclist )
+    end
 
 end
 
@@ -343,7 +451,7 @@ if CLIENT then
 
     function ENT:GetOverlayText()
         local plyname = self:GetSpawnerName() .. "\n" or ""
-        return plyname .. " ( " .. self:GetMusicName() .. " )"
+        return !clientmodecvar:GetBool() and plyname .. " ( " .. self:GetMusicName() .. " )" or plyname .. " ( " .. self.l_trackname .. " )"
     end
 
     local function PlayMusicTrack( self, track, no3d )
@@ -383,6 +491,7 @@ if CLIENT then
     end
     
     net.Receive( "lambdaplayers_musicbox_playmusic", function()
+        if clientmodecvar:GetBool() then return end
         local musicbox = net.ReadEntity()
         local track = net.ReadString()
 
@@ -426,22 +535,43 @@ properties.Add("Music Tracks", {
     end,
 
     MenuOpen = function( self, option, ent, tr )
-        if !ent.l_musiclist then return end
-        local submenu = option:AddSubMenu()
 
-        local copy = table_Copy( ent.l_musiclist )
-        table_sort( copy )
 
-        for i = 1, #copy do
+        if !clientmodecvar:GetBool() then
 
-            submenu:AddOption( TrackPrettyprint( copy[ i ] ), function()
-            
-                self:MsgStart()
-                    net.WriteEntity( ent )
-                    net.WriteString( copy[ i ] )
-                self:MsgEnd()
+            if !ent.l_musiclist then return end
+            local submenu = option:AddSubMenu()
 
-            end)
+            local copy = table_Copy( ent.l_musiclist )
+            table_sort( copy )
+
+            for i = 1, #copy do
+
+                submenu:AddOption( TrackPrettyprint( copy[ i ] ), function()
+                
+                    self:MsgStart()
+                        net.WriteEntity( ent )
+                        net.WriteString( copy[ i ] )
+                    self:MsgEnd()
+
+                end)
+
+            end
+
+        else
+
+            local submenu = option:AddSubMenu()
+
+            local copy = table_Copy( ent.l_clmusiclist )
+            table_sort( copy )
+
+            for i = 1, #copy do
+
+                submenu:AddOption( TrackPrettyprint( copy[ i ] ), function()
+                    ent:PlayTrack( copy[ i ] )
+                end)
+
+            end
 
         end
 
@@ -472,12 +602,13 @@ properties.Add( "Enable Loop", {
     Filter = function( self, ent, ply ) 
         if !IsValid( ent ) then return false end
         if ent:GetClass() != "lambda_musicbox" then return false end
+        if ply:GetInfoNum( "lambdaplayers_musicbox_clientsidemode", 0 ) == 1 then return false end
         if ent:GetLooped() then return false end
         if !gamemode.Call( "CanProperty", ply, "Enable Loop", ent ) then return false end
 
         return true
     end,
-
+    
     Action = function( self, ent ) 
         self:MsgStart()
             net.WriteEntity( ent )
@@ -505,6 +636,7 @@ properties.Add( "Disable Loop", {
     Filter = function( self, ent, ply ) 
         if !IsValid( ent ) then return false end
         if ent:GetClass() != "lambda_musicbox" then return false end
+        if ply:GetInfoNum( "lambdaplayers_musicbox_clientsidemode", 0 ) == 1 then return false end
         if !ent:GetLooped() then return false end
         if !gamemode.Call( "CanProperty", ply, "Disable Loop", ent ) then return false end
 
@@ -530,6 +662,47 @@ properties.Add( "Disable Loop", {
 
 })
 
+
+-- CLIENT SIDE MODE LOOPING --
+properties.Add( "Enable Loop Client Side", {
+    MenuLabel = "Enable Loop",
+    Order = 498,
+    MenuIcon = "icon16/arrow_rotate_anticlockwise.png",
+
+    Filter = function( self, ent, ply ) 
+        if !IsValid( ent ) then return false end
+        if ent:GetClass() != "lambda_musicbox" then return false end
+        if ply:GetInfoNum( "lambdaplayers_musicbox_clientsidemode", 0 ) == 0 then return false end
+
+        return true
+    end,
+    
+    Action = function( self, ent ) 
+        ent.l_islooped = true
+    end,
+
+})
+
+properties.Add( "Disable Loop Client Side", {
+    MenuLabel = "Disable Loop",
+    Order = 498,
+    MenuIcon = "icon16/cancel.png",
+
+    Filter = function( self, ent, ply ) 
+        if !IsValid( ent ) then return false end
+        if ent:GetClass() != "lambda_musicbox" then return false end
+        if ply:GetInfoNum( "lambdaplayers_musicbox_clientsidemode", 0 ) == 0 then return false end
+
+        return true
+    end,
+
+    Action = function( self, ent ) 
+        ent.l_islooped = false
+    end,
+
+})
+-------------------
+
 properties.Add( "Play Next Track", {
     MenuLabel = "Play Next Track",
     Order = 497,
@@ -544,9 +717,15 @@ properties.Add( "Play Next Track", {
     end,
 
     Action = function( self, ent ) 
-        self:MsgStart()
-            net.WriteEntity( ent )
-        self:MsgEnd()
+        if !clientmodecvar:GetBool() then
+
+            self:MsgStart()
+                net.WriteEntity( ent )
+            self:MsgEnd()
+
+        else 
+            ent:PlayMusicClientSide()
+        end
     end,
 
     Receive = function( self, length, ply )
@@ -577,9 +756,15 @@ properties.Add( "Restart Current Track", {
     end,
 
     Action = function( self, ent ) 
-        self:MsgStart()
-            net.WriteEntity( ent )
-        self:MsgEnd()
+        if !clientmodecvar:GetBool() then
+
+            self:MsgStart()
+                net.WriteEntity( ent )
+            self:MsgEnd()
+
+        else 
+            ent:PlayTrack( ent.l_realtrackname )
+        end
     end,
 
     Receive = function( self, length, ply )

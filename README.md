@@ -15,7 +15,7 @@ The Music Box returns from Zeta Players but now this time is more multiplayer fr
 - OGG
 - Anything else BASS audio system supports http://www.un4seen.com/doc/#bass/bass.html
 
-The Music Box's main feature is its Music Visualizer that will follow the music as it plays.
+The Music Box also sees the return of the Music Visualizer as seen previously. One new feature the Lambda Music Box has over the Zeta's is the ability to enter a "Client Side mode" which means you can play your own music in any multiplayer server without limitation. In this state however, only you can hear/control whatever is being played so keep that in mind.
 
 ## How to add music
 To add music to the Music Box, simply create folders until you get this file path: `DRIVE:\Program Files (x86)\Steam\steamapps\common\GarrysMod\sourceengine\sound\lambdaplayers\musicbox`

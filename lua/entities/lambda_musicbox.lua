@@ -226,7 +226,7 @@ function ENT:Think()
         self.l_firstplayed = false
     elseif SERVER and self:IsPlaying() and CurTime() > self.l_nextdancewave then
         for k, v in RandomPairs( GetLambdaPlayers() ) do
-            if LambdaIsValid( v ) and v:GetRangeSquaredTo( self:GetPos() ) <= ( 2000 * 2000 ) then
+            if LambdaIsValid( v ) and v:GetRangeSquaredTo( self:GetPos() ) <= ( 2000 * 2000 ) and random( 1, 3 ) == 1 then
                 v:DanceNearEnt( self ) 
                 break
             end

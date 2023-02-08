@@ -1,5 +1,5 @@
 
-
+CreateLambdaConvar( "lambdaplayers_musicbox_dancechance", 10, true, false, false, "The chance a lambda will dance near a music box", 0, 100, { type = "Slider", decimals = 0, name = "Dance Chance", category = "Music Box" } )
 CreateLambdaConvar( "lambdaplayers_musicbox_drawvisualizer", 1, true, true, false, "If the Music Visualizer should be rendered", 0, 1, { type = "Bool", name = "Draw Visualizer", category = "Music Box" } )
 CreateLambdaConvar( "lambdaplayers_musicbox_drawvisualizerlight", 1, true, true, false, "If the Music Visualizer should draw a light according to the music", 0, 1, { type = "Bool", name = "Draw Light", category = "Music Box" } )
 CreateLambdaConvar( "lambdaplayers_musicbox_visualizerresolution", 100, true, true, false, "The resolution of the Music Visualizer", 20, 200, { type = "Slider", decimals = 0, name = "Visualizer Resolution", category = "Music Box" } )

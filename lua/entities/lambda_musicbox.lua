@@ -226,7 +226,7 @@ function ENT:Think()
         self.l_firstplayed = false
     elseif SERVER and self:IsPlaying() and CurTime() > self.l_nextdancewave then
         for k, v in RandomPairs( GetLambdaPlayers() ) do
-            if LambdaIsValid( v ) and v:GetRangeSquaredTo( self:GetPos() ) <= ( 2000 * 2000 ) and random( 1, 3 ) == 1 then
+            if LambdaIsValid( v ) and v:GetRangeSquaredTo( self:GetPos() ) <= ( 2000 * 2000 ) and random( 0, 100 ) < GetConVar( "lambdaplayers_musicbox_dancechance" ):GetInt() then
                 v:DanceNearEnt( self ) 
                 break
             end
@@ -306,7 +306,7 @@ function ENT:PlayMusic( specifictrack )
     net.Broadcast()
 
     for k, v in ipairs( GetLambdaPlayers() ) do
-        if LambdaIsValid( v ) and v:GetRangeSquaredTo( self:GetPos() ) <= ( 2000 * 2000 ) and random( 1, 3 ) == 1 then
+        if LambdaIsValid( v ) and v:GetRangeSquaredTo( self:GetPos() ) <= ( 2000 * 2000 ) and random( 0, 100 ) < GetConVar( "lambdaplayers_musicbox_dancechance" ):GetInt() then
             v:DanceNearEnt( self ) 
         end
     end

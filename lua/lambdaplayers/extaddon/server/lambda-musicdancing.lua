@@ -50,7 +50,7 @@ local function Initialize( self )
             local filepath = snddata.SoundName 
             local ent = snddata.Entity 
 
-            if IsValid( ent ) and string_find( filepath, "music" ) and self:GetRangeSquaredTo( ent ) <= ( 2000 * 2000 ) and random( 1, 3 ) == 1 then -- Music!
+            if IsValid( ent ) and string_find( filepath, "music" ) and self:GetRangeSquaredTo( ent ) <= ( 2000 * 2000 ) and math.random( 1, 100 ) < GetConVar( "lambdaplayers_musicbox_dancechance" ):GetInt()  then -- Music!
                 self:DanceNearEnt( ent ) 
             end
         end, true )

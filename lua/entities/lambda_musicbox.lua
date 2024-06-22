@@ -449,23 +449,33 @@ end
 
 if CLIENT then
 
+    local musicshare = GetConVar( "lambdaplayers_musicbox_allowmusicsharing" )
+
     function ENT:GetOverlayText()
         local plyname = self:GetSpawnerName() .. "\n" or ""
         return !clientmodecvar:GetBool() and plyname .. " ( " .. self:GetMusicName() .. " )" or plyname .. " ( " .. self.l_trackname .. " )"
     end
 
-    local function PlayMusicTrack( self, track, no3d )
+    local function PlayMusicTrack( self, track, no3d, is_fileshare )
         if IsValid( self.l_musicchannel ) then self.l_musicchannel:Stop() end
 
         self.l_no3d = no3d
 
         local flags = no3d and "mono" or "3d mono"  
 
-        sound.PlayFile( "sound/" .. track, flags, function( chan, id, name )
+        sound.PlayFile( track, flags, function( chan, id, name )
             if id then
                 if id == 2 then
                     if game.SinglePlayer() then
                         print( "Lambda Players Music Box Warning: A music file failed to open. File is, " .. "sound/" .. track .. "\nMake sure you are not using non alphabet characters and double spaces in your file names" )
+                    else
+                        if !is_fileshare and !file.Exists( track, "GAME" ) and musicshare:GetBool() then
+                            LambdaRequestFile( track, function( path )
+                                if !IsValid( self ) then return end 
+                                PlayMusicTrack( self, "data/" .. path, no3d, true )
+                            end, function() return IsValid( self ) and "sound/" .. self:GetTrackName() == track end )
+                            return
+                        end
                     end
                     self:EmitSound( "buttons/combine_button_locked.wav", 100 )
                 elseif id == 21 then
@@ -497,7 +507,7 @@ if CLIENT then
 
         if !IsValid( musicbox ) then return end
 
-        PlayMusicTrack( musicbox, track, false )
+        PlayMusicTrack( musicbox, "sound/" .. track, false )
     end )
 
     local receiving = false

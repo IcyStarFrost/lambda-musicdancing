@@ -9,6 +9,7 @@ CreateLambdaConvar( "lambdaplayers_musicbox_custommusiconly", 0, true, false, fa
 CreateLambdaConvar( "lambdaplayers_musicbox_musicvolume", 1, true, true, false, "The volume of the music played", 0, 10, { type = "Slider", decimals = 2, name = "Music Volume", category = "Music Box" } )
 CreateLambdaConvar( "lambdaplayers_musicbox_playonce", 0, true, false, false, "If Music Boxes should only play once and remove themselves", 0, 1, { type = "Bool", name = "Play Once", category = "Music Box" } )
 CreateLambdaConvar( "lambdaplayers_musicbox_clientsidemode", 0, true, true, true, "If Musics Boxes should enter Client-Side mode and play music you have instead of the Server's music. Note: This is only useful in Multiplayer and only you can hear your music", 0, 1, { type = "Bool", name = "Client-Side Mode", category = "Music Box" } )
+CreateLambdaConvar( "lambdaplayers_musicbox_allowmusicsharing", 0, true, false, false, "If the Server should network music to other clients\n\nWARNING! THIS WILL CAUSE A LAG SPIKE WHEN A TRACK IS PLAYED!\nNote: Music will not be synced between clients!", 0, 1, { type = "Bool", name = "Allow Music Sharing", category = "Music Box" } )
 
 
 local VectorRand = VectorRand

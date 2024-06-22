@@ -450,6 +450,7 @@ end
 if CLIENT then
 
     local musicshare = GetConVar( "lambdaplayers_musicbox_allowmusicsharing" )
+    local allowfileshare = GetConVar( "lambdaplayers_lambda_allowfilesharing" )
 
     function ENT:GetOverlayText()
         local plyname = self:GetSpawnerName() .. "\n" or ""
@@ -469,7 +470,7 @@ if CLIENT then
                     if game.SinglePlayer() then
                         print( "Lambda Players Music Box Warning: A music file failed to open. File is, " .. "sound/" .. track .. "\nMake sure you are not using non alphabet characters and double spaces in your file names" )
                     else
-                        if !is_fileshare and !file.Exists( track, "GAME" ) and musicshare:GetBool() then
+                        if !is_fileshare and !file.Exists( track, "GAME" ) and musicshare:GetBool() and allowfileshare:GetBool() then
                             LambdaRequestFile( track, function( path )
                                 if !IsValid( self ) then return end 
                                 PlayMusicTrack( self, "data/" .. path, no3d, true )
